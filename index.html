@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GapFinder Pro | PhD Research Repository</title>
+    <title>GapFinder Pro | Live Research Repository</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -13,10 +13,11 @@
         .chart-container { position: relative; width: 100%; height: 320px; }
         .loader { border: 2px solid #f3f3f3; border-top: 2px solid #0d9488; border-radius: 50%; width: 18px; height: 18px; animation: spin 0.8s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .venue-tag { background: #f0fdfa; color: #0d9488; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; border: 1px solid #ccfbf1; }
     </style>
-    <!-- Chosen Palette: Sandstone Neutral, Deep Teal, and Amber -->
-    <!-- Application Structure Plan: The SPA is a research funnel: 1. Discovery (Search), 2. Intelligence (ML synthesis), 3. Context (Analytics charts), 4. Evidence (Paper repository). -->
-    <!-- Visualization & Content Choices: 1. Goal: Geographic Concentration -> Horizontal Bar Chart -> Interaction: Hover to see percentage share. 2. Goal: Research Gap -> Gemini 2.5 API synthesis. -->
+    <!-- Chosen Palette: Sandstone, Teal, and Slate -->
+    <!-- Application Structure Plan: Connects to Semantic Scholar API for real-world paper fetching. 1. Live Search (Real-time API), 2. Global Metrics (Live citation counts), 3. AI Analysis (Semantic synthesis of real abstracts), 4. Venue Analytics (Distribution across journals/conferences). -->
+    <!-- Visualization & Content Choices: 1. Goal: Compare Sources -> Bar Chart (Venues) -> Justification: Shows where the top papers are being published. 2. Goal: Live Data -> Semantic Scholar API integration. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="min-h-screen flex flex-col">
@@ -24,17 +25,15 @@
     <header class="bg-stone-900 text-stone-50 py-6 px-6 shadow-xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-3">
-                <div class="bg-teal-600 p-2.5 rounded-xl">
-                    <span class="text-2xl font-black">GF</span>
-                </div>
-                <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight">GapFinder <span class="text-teal-500">PRO</span></h1>
-                    <p class="text-stone-400 text-[10px] uppercase tracking-widest font-bold">PhD Research Discovery</p>
-                </div>
+                <div class="bg-teal-600 p-2.5 rounded-xl font-bold">GF</div>
+                <h1 class="text-2xl font-extrabold tracking-tight">GapFinder <span class="text-teal-500">PRO</span></h1>
             </div>
             <div class="w-full md:w-1/2 relative">
-                <input type="text" id="searchInput" placeholder="Search (AI, Quantum, Climate)..." class="w-full py-3 px-5 pr-16 rounded-2xl text-stone-900 focus:outline-none focus:ring-4 focus:ring-teal-500/30 border-none shadow-inner">
-                <button id="searchBtn" class="absolute right-2 top-2 bottom-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl px-5 font-bold transition-all text-sm">Find</button>
+                <input type="text" id="searchInput" placeholder="Search real papers (e.g. Hydrogel, Graphene, LLMs)..." class="w-full py-3 px-5 pr-16 rounded-2xl text-stone-900 focus:outline-none focus:ring-4 focus:ring-teal-500/30 border-none shadow-inner">
+                <button id="searchBtn" class="absolute right-2 top-2 bottom-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl px-5 font-bold transition-all text-sm flex items-center gap-2">
+                    <span id="searchBtnText">Find</span>
+                    <div id="searchLoader" class="loader hidden !border-white !border-t-transparent"></div>
+                </button>
             </div>
         </div>
     </header>
@@ -46,7 +45,7 @@
             <div class="flex flex-col lg:flex-row justify-between items-center gap-6">
                 <div>
                     <h2 class="text-2xl font-black text-teal-950 flex items-center gap-3"><span>🧠</span> AI Research Strategist</h2>
-                    <p class="text-stone-600 mt-2">Identify unexplored research gaps and experimental titles for your PhD review paper.</p>
+                    <p class="text-stone-600 mt-2">Identify unexplored research gaps in the <strong>live database</strong> results.</p>
                 </div>
                 <button id="aiBtn" class="bg-stone-950 hover:bg-stone-800 text-white px-8 py-3.5 rounded-xl font-bold flex items-center gap-3 shadow-lg disabled:opacity-50 transition-all">
                     <span id="aiBtnText">Analyze Gaps</span>
@@ -59,15 +58,15 @@
         <!-- Stats -->
         <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div class="glass-card p-6 rounded-2xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Matched Papers</h3>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Papers Loaded</h3>
                 <p id="statTotal" class="text-4xl font-black mt-1">0</p>
             </div>
             <div class="glass-card p-6 rounded-2xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Research Hubs</h3>
-                <p id="statRegions" class="text-4xl font-black text-teal-700 mt-1">0</p>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Venues</h3>
+                <p id="statVenues" class="text-4xl font-black text-teal-700 mt-1">0</p>
             </div>
             <div class="glass-card p-6 rounded-2xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Avg Citation Impact</h3>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Live Citation Peak</h3>
                 <p id="statImpact" class="text-4xl font-black text-amber-600 mt-1">0</p>
             </div>
         </section>
@@ -75,39 +74,76 @@
         <!-- Visuals -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="glass-card p-8 rounded-[2rem]">
-                <h3 class="font-black text-stone-800 mb-6">Geographic Distribution (%)</h3>
-                <div class="chart-container"><canvas id="countryChart"></canvas></div>
+                <h3 class="font-black text-stone-800 mb-6">Venue Distribution (%)</h3>
+                <div class="chart-container"><canvas id="venueChart"></canvas></div>
             </div>
             <div class="glass-card p-8 rounded-[2rem]">
-                <h3 class="font-black text-stone-800 mb-6">Momentum Timeline</h3>
+                <h3 class="font-black text-stone-800 mb-6">Publication Recency</h3>
                 <div class="chart-container"><canvas id="trendChart"></canvas></div>
             </div>
         </section>
 
         <!-- List -->
         <section class="glass-card p-8 rounded-[2rem]">
-            <h3 class="text-2xl font-black text-stone-800 mb-8 border-b pb-4">Evidence Repository</h3>
+            <h3 class="text-2xl font-black text-stone-800 mb-8 border-b pb-4">Live Evidence Repository</h3>
             <div id="paperList" class="flex flex-col gap-6"></div>
             <div id="noResults" class="hidden py-24 text-center text-stone-400">
-                <p class="text-xl font-bold">No results for this query.</p>
-                <p class="text-sm mt-1">Try "AI", "Quantum", "Climate", or "Healthcare".</p>
+                <p class="text-xl font-bold">Search for a topic to load real papers.</p>
             </div>
         </section>
     </main>
 
+    <footer class="bg-stone-900 text-stone-500 py-12 px-6 mt-12 text-center text-xs">
+        <p>© 2026 GapFinder Pro | Data via Semantic Scholar API</p>
+    </footer>
+
     <script>
         const apiKey = ""; 
-        const mockDatabase = [
-            { id: 1, title: "Generative AI for Molecular Diagnostics", authors: "Li, H., et al.", year: 2024, cites: 185, country: "USA", abstract: "Using transformer architectures for interpretating complex medical imaging." },
-            { id: 2, title: "Quantum Error Correction in Circuits", authors: "Zhang, Q.", year: 2023, cites: 110, country: "China", abstract: "Novel surface codes for superconducting processors." },
-            { id: 3, title: "Circular Economy in Logistics", authors: "Okonkwo, B.", year: 2022, cites: 245, country: "Nigeria", abstract: "Climate-induced supply chain resilience models." },
-            { id: 4, title: "Privacy in Healthcare Data", authors: "Park, S.", year: 2023, cites: 64, country: "South Korea", abstract: "Federated learning for sensitive health records." },
-            { id: 5, title: "Attention Models for Finance", authors: "Garcia, M.", year: 2024, cites: 310, country: "Spain", abstract: "Long-term time-series forecasting in volatile markets." }
-        ];
-
         let countryChart = null;
         let trendChart = null;
-        let activeData = [...mockDatabase];
+        let activeData = [];
+
+        async function fetchPapers() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            const btn = document.getElementById('searchBtn');
+            const loader = document.getElementById('searchLoader');
+            const btnText = document.getElementById('searchBtnText');
+            
+            btn.disabled = true;
+            loader.classList.remove('hidden');
+            btnText.textContent = "";
+
+            const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=15&fields=title,authors,year,citationCount,abstract,venue`;
+
+            try {
+                const response = await fetch(url);
+                const result = await response.json();
+                
+                if (result.data) {
+                    activeData = result.data.map(p => ({
+                        id: p.paperId,
+                        title: p.title,
+                        authors: p.authors.map(a => a.name).join(', '),
+                        year: p.year || 'N/A',
+                        cites: p.citationCount || 0,
+                        venue: p.venue || 'Journal/Conference',
+                        abstract: p.abstract || "No abstract available for this paper."
+                    }));
+                    updateUI(activeData);
+                } else {
+                    updateUI([]);
+                }
+            } catch (err) {
+                console.error(err);
+                updateUI([]);
+            } finally {
+                btn.disabled = false;
+                loader.classList.add('hidden');
+                btnText.textContent = "Find";
+            }
+        }
 
         async function analyzeGaps() {
             if (activeData.length === 0) return;
@@ -115,9 +151,9 @@
             const loader = document.getElementById('aiLoader');
             const output = document.getElementById('aiOutput');
             btn.disabled = true; loader.classList.remove('hidden');
-            output.classList.remove('hidden'); output.textContent = "AI Assistant is analyzing research gaps...";
+            output.classList.remove('hidden'); output.textContent = "AI Assistant is analyzing real-world abstracts for gaps...";
 
-            const prompt = `Review these paper abstracts for PhD research gaps:\n${activeData.map(p => p.abstract).join("\n")}`;
+            const prompt = `Review these real academic abstracts for PhD research gaps and specific experimental ideas:\n${activeData.filter(p => p.abstract.length > 50).slice(0, 5).map(p => p.abstract).join("\n\n")}`;
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
                     method: 'POST',
@@ -127,7 +163,7 @@
                 const data = await res.json();
                 output.textContent = data.candidates[0].content.parts[0].text;
             } catch (err) {
-                output.textContent = "Demo Mode: Research gap identified in cross-domain model verification. Suggestion: Longitudinal study on diagnostic accuracy.";
+                output.textContent = "Could not synthesize gaps. Please try another search.";
             } finally {
                 btn.disabled = false; loader.classList.add('hidden');
             }
@@ -137,44 +173,70 @@
             const list = document.getElementById('paperList');
             const noRes = document.getElementById('noResults');
             list.innerHTML = '';
-            if (data.length === 0) { noRes.classList.remove('hidden'); return; }
+            
+            if (data.length === 0) {
+                noRes.classList.remove('hidden');
+                document.getElementById('statTotal').textContent = "0";
+                document.getElementById('statVenues').textContent = "0";
+                document.getElementById('statImpact').textContent = "0";
+                return;
+            }
+            
             noRes.classList.add('hidden');
-
             data.forEach(p => {
                 const div = document.createElement('div');
-                div.className = 'p-6 border border-stone-100 rounded-2xl bg-white flex justify-between items-center gap-6';
-                div.innerHTML = `<div><span class="text-[9px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded font-black uppercase">${p.country}</span><h4 class="font-bold text-xl text-stone-800 mt-1">${p.title}</h4><p class="text-sm text-stone-500 italic mt-2">"${p.abstract}"</p></div><div class="text-center shrink-0 bg-stone-50 p-4 rounded-xl min-w-[100px]"><span class="text-3xl font-black text-stone-800">${p.cites}</span><p class="text-[9px] text-stone-400 uppercase font-bold">Cites</p></div>`;
+                div.className = 'p-6 border border-stone-100 rounded-2xl bg-white flex flex-col md:flex-row justify-between items-start gap-6 hover:border-teal-500 transition-all';
+                div.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="venue-tag">${p.venue}</span>
+                            <span class="text-stone-400 text-xs font-bold">${p.year}</span>
+                        </div>
+                        <h4 class="font-bold text-lg text-stone-800 leading-tight">${p.title}</h4>
+                        <p class="text-[11px] text-stone-500 mt-1">${p.authors}</p>
+                        <p class="text-stone-600 text-sm mt-4 italic leading-relaxed line-clamp-3">"${p.abstract}"</p>
+                    </div>
+                    <div class="text-center shrink-0 bg-stone-50 p-4 rounded-xl min-w-[100px]">
+                        <span class="text-3xl font-black text-stone-800">${p.cites}</span>
+                        <p class="text-[9px] text-stone-400 uppercase font-bold">Cites</p>
+                    </div>
+                `;
                 list.appendChild(div);
             });
 
             document.getElementById('statTotal').textContent = data.length;
-            document.getElementById('statRegions').textContent = [...new Set(data.map(p => p.country))].length;
-            document.getElementById('statImpact').textContent = Math.round(data.reduce((a,b) => a+b.cites, 0) / data.length);
+            document.getElementById('statVenues').textContent = [...new Set(data.map(p => p.venue))].length;
+            document.getElementById('statImpact').textContent = Math.max(...data.map(p => p.cites));
             renderCharts(data);
         }
 
         function renderCharts(data) {
-            const countryCtx = document.getElementById('countryChart').getContext('2d');
-            const counts = {}; data.forEach(p => counts[p.country] = (counts[p.country] || 0) + 1);
+            const venueCtx = document.getElementById('venueChart').getContext('2d');
+            const venues = {}; data.forEach(p => venues[p.venue] = (venues[p.venue] || 0) + 1);
             if (countryChart) countryChart.destroy();
-            countryChart = new Chart(countryCtx, { type: 'bar', data: { labels: Object.keys(counts), datasets: [{ label: '% Output', data: Object.values(counts).map(v => (v/data.length*100).toFixed(1)), backgroundColor: '#0d9488', borderRadius: 10 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}}});
+            countryChart = new Chart(venueCtx, { 
+                type: 'bar', 
+                data: { 
+                    labels: Object.keys(venues).map(v => v.length > 15 ? v.substring(0, 15) + '...' : v), 
+                    datasets: [{ label: '% share', data: Object.values(venues).map(v => (v/data.length*100).toFixed(1)), backgroundColor: '#0d9488', borderRadius: 5 }] 
+                }, 
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}}
+            });
 
             const trendCtx = document.getElementById('trendChart').getContext('2d');
-            const years = [2022, 2023, 2024];
+            const years = Array.from(new Set(data.map(p => p.year))).filter(y => !isNaN(y)).sort();
             const yearCounts = years.map(y => data.filter(p => p.year === y).length);
             if (trendChart) trendChart.destroy();
-            trendChart = new Chart(trendCtx, { type: 'line', data: { labels: years, datasets: [{ label: 'Papers', data: yearCounts, borderColor: '#0d9488', backgroundColor: 'rgba(13, 148, 136, 0.05)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false }});
+            trendChart = new Chart(trendCtx, { 
+                type: 'line', 
+                data: { labels: years, datasets: [{ label: 'Papers', data: yearCounts, borderColor: '#0d9488', backgroundColor: 'rgba(13, 148, 136, 0.05)', fill: true, tension: 0.4 }] }, 
+                options: { responsive: true, maintainAspectRatio: false }
+            });
         }
 
-        document.getElementById('searchBtn').addEventListener('click', () => {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            activeData = mockDatabase.filter(p => p.title.toLowerCase().includes(q) || p.abstract.toLowerCase().includes(q));
-            updateUI(activeData);
-            document.getElementById('aiOutput').classList.add('hidden');
-        });
-
+        document.getElementById('searchBtn').addEventListener('click', fetchPapers);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => e.key === 'Enter' && fetchPapers());
         document.getElementById('aiBtn').addEventListener('click', analyzeGaps);
-        window.onload = () => updateUI(mockDatabase);
     </script>
 </body>
 </html>
