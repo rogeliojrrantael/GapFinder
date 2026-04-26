@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GapFinder Pro | Live Academic Research Repository</title>
+    <title>GapFinder Pro | OpenAlex Academic Intelligence</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
-        :root {
-            --primary: #0d9488;
-            --bg: #fcfbf9;
-        }
-
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg);
+            background-color: #fdfcfb;
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
         }
@@ -36,12 +31,12 @@
 
         .ai-panel {
             background: linear-gradient(135deg, #ffffff 0%, #f0fdfa 100%);
-            border-left: 6px solid var(--primary);
+            border-left: 6px solid #0d9488;
         }
 
         .loader {
             border: 2px solid #f3f3f3;
-            border-top: 2px solid var(--primary);
+            border-top: 2px solid #0d9488;
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -50,18 +45,24 @@
 
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .paper-card { transition: all 0.2s ease; border-left: 4px solid transparent; }
-        .paper-card:hover { transform: translateX(4px); border-left-color: var(--primary); border-color: #0d948844; }
+        .paper-card {
+            transition: all 0.2s ease;
+            border-left: 4px solid transparent;
+        }
+        .paper-card:hover {
+            transform: translateX(5px);
+            border-left-color: #0d9488;
+            background-color: #f0fdfa;
+        }
 
         .tag { font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
-    <!-- Application Structure Plan: Transitions from a static demo to a live API-connected tool. 1. Discovery (Semantic Scholar Live Search), 2. Intelligence (Gemini Gap Synthesis), 3. Analytics (Venue and Trend charts), 4. Evidence (Expandable Repository). Syncs all metrics in real-time to prevent the "empty list but active stats" bug. -->
-    <!-- Visualization & Content Choices: 1. Goal: Compare Impact -> Bar Chart (Venues) -> Justification: Shows where research concentration is highest. 2. Goal: Live Data -> Fetch from Semantic Scholar. -->
+    <!-- Application Structure Plan: Transitions to OpenAlex API for massive-scale metadata. 1. Reconstructs abstracts from OpenAlex Inverted Index. 2. Real-time Geographic mapping via institutional country codes. 3. AI Strategist synthesis based on live OpenAlex results. 4. Metrics synced dynamically to API response to fix the previous "ghost metrics" bug. -->
+    <!-- Visualization & Content Choices: 1. Goal: Geographic Concentration -> Horizontal Bar Chart (Country Codes) -> Justification: OpenAlex has the best open institutional data. 2. Goal: Live Integration -> OpenAlex REST API. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- Header Section -->
     <header class="bg-stone-900 text-stone-50 py-6 px-6 md:px-12 shadow-2xl sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-4">
@@ -71,12 +72,13 @@
                 <div>
                     <h1 class="text-2xl font-extrabold tracking-tight">GapFinder <span class="text-teal-500">PRO</span></h1>
                     <p class="text-stone-400 text-[9px] uppercase tracking-widest font-bold flex items-center gap-2">
-                        Live Database: <span id="dbStatus" class="text-teal-500">Connected</span>
+                        <span class="h-2 w-2 rounded-full bg-teal-500"></span> 
+                        Database: OpenAlex Global Index
                     </p>
                 </div>
             </div>
             <div class="w-full md:w-1/2 relative">
-                <input type="text" id="searchInput" placeholder="Search for real topics (e.g., Hydrogel, Graphene)..." class="w-full py-3.5 px-6 pr-20 rounded-2xl text-stone-900 bg-white focus:outline-none focus:ring-4 focus:ring-teal-600/30 border-none shadow-inner text-lg">
+                <input type="text" id="searchInput" placeholder="Search hydrogel, materials, biotech..." class="w-full py-3.5 px-6 pr-20 rounded-2xl text-stone-900 bg-white focus:outline-none focus:ring-4 focus:ring-teal-600/30 border-none shadow-inner text-lg">
                 <button id="searchBtn" class="absolute right-2 top-2 bottom-2 bg-teal-700 hover:bg-teal-600 text-white rounded-xl px-6 transition-all font-bold flex items-center gap-2">
                     <span id="searchBtnText">Find</span>
                     <div id="searchLoader" class="loader hidden !border-white !border-t-transparent"></div>
@@ -87,19 +89,19 @@
 
     <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8 flex flex-col gap-10">
         
-        <!-- AI Discovery Layer -->
+        <!-- AI Discovery Panel -->
         <section class="glass-card p-8 rounded-3xl ai-panel">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
                 <div class="max-w-2xl">
                     <h2 class="text-2xl font-black text-teal-950 flex items-center gap-3">
                         <span>💡</span> Research Gap Strategist (AI)
                     </h2>
-                    <p class="text-stone-600 mt-2 leading-relaxed text-sm">
-                        Analyzes real-world abstracts from the <strong>live repository</strong> below to synthesize unexplored PhD research questions and experimental designs.
+                    <p class="text-stone-600 mt-2 text-sm leading-relaxed">
+                        Synthesizes metadata from <strong>OpenAlex</strong> to identify research voids and novel PhD trajectories.
                     </p>
                 </div>
                 <button id="aiBtn" class="bg-stone-950 hover:bg-stone-800 text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-4 transition-all shadow-xl disabled:opacity-50">
-                    <span id="aiBtnText">Analyze Gaps</span>
+                    <span id="aiBtnText">Analyze Topic Gaps</span>
                     <div id="aiLoader" class="loader hidden"></div>
                 </button>
             </div>
@@ -107,129 +109,144 @@
             </div>
         </section>
 
-        <!-- Live Metrics -->
+        <!-- Stats Overview -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div class="glass-card p-6 rounded-3xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Papers Found</h3>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Papers Analyzed</h3>
                 <p id="statCount" class="text-4xl font-black text-stone-800 mt-1">0</p>
             </div>
             <div class="glass-card p-6 rounded-3xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Publishing Venues</h3>
-                <p id="statVenues" class="text-4xl font-black text-teal-700 mt-1">0</p>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Active Hubs</h3>
+                <p id="statRegions" class="text-4xl font-black text-teal-700 mt-1">0</p>
             </div>
             <div class="glass-card p-6 rounded-3xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Max Citation Hit</h3>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Max Citations</h3>
                 <p id="statImpact" class="text-4xl font-black text-amber-600 mt-1">0</p>
             </div>
             <div class="glass-card p-6 rounded-3xl text-center">
-                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Active Query</h3>
-                <p id="statScope" class="text-lg font-bold text-stone-800 mt-4 truncate px-2">Ready</p>
+                <h3 class="text-stone-400 font-bold text-[10px] uppercase tracking-widest">Query Status</h3>
+                <p id="statScope" class="text-sm font-bold text-stone-700 mt-4 uppercase">Ready</p>
             </div>
         </section>
 
-        <!-- Analytic Visuals -->
+        <!-- Visual Analytics -->
         <section id="visuals" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div class="glass-card p-8 rounded-3xl">
-                <h3 class="text-xl font-black text-stone-800 mb-6">Venue Distribution (%)</h3>
+                <h3 class="text-xl font-black text-stone-800 mb-6">Geographic Contribution (%)</h3>
                 <div class="chart-container">
-                    <canvas id="venueChart"></canvas>
+                    <canvas id="countryChart"></canvas>
                 </div>
             </div>
             <div class="glass-card p-8 rounded-3xl">
-                <h3 class="text-xl font-black text-stone-800 mb-6">Publication Trends</h3>
+                <h3 class="text-xl font-black text-stone-800 mb-6">Momentum Timeline</h3>
                 <div class="chart-container">
                     <canvas id="trendChart"></canvas>
                 </div>
             </div>
         </section>
 
-        <!-- Live Repository -->
+        <!-- Repository -->
         <section class="glass-card p-8 rounded-[2.5rem]">
             <h3 class="text-2xl font-black text-stone-800 mb-8 border-b border-stone-100 pb-4">Live Evidence Repository</h3>
             <div id="paperList" class="flex flex-col gap-6">
-                <!-- Data will be loaded here -->
+                <!-- Data streams here -->
             </div>
             <div id="noResults" class="py-24 text-center flex flex-col items-center">
-                <div class="text-6xl mb-4 opacity-20 grayscale">🔭</div>
-                <h4 class="text-xl font-bold text-stone-400" id="emptyStateText">Search for a topic to load real academic papers</h4>
+                <div class="text-7xl mb-4 opacity-20 grayscale">📂</div>
+                <h4 class="text-xl font-bold text-stone-400" id="emptyState">Enter a topic above to query OpenAlex</h4>
             </div>
         </section>
 
     </main>
 
-    <footer class="bg-stone-900 text-stone-500 py-12 px-8 mt-12 border-t border-stone-800 text-center">
-        <p class="text-sm">GapFinder Pro • Integrated with Semantic Scholar Academic Graph</p>
-        <p class="text-[10px] uppercase tracking-[0.3em] mt-2 opacity-40">© 2026 PhD Discovery Suite</p>
+    <footer class="bg-stone-900 text-stone-500 py-12 px-8 mt-12 border-t border-stone-800 text-center text-xs">
+        <p>GapFinder Pro | Metadata provided by OpenAlex.org Open Academic Graph</p>
     </footer>
 
     <script>
-        const apiKey = ""; // Runtime provides this
-        let venueChart = null;
+        const apiKey = ""; // Gemini API Key
+        let countryChart = null;
         let trendChart = null;
-        let activeResults = [];
+        let paperResults = [];
 
-        async function fetchRealPapers() {
+        // Helper to reconstruct OpenAlex inverted abstracts
+        function reconstructAbstract(invertedIndex) {
+            if (!invertedIndex) return "No abstract available for this work.";
+            const words = [];
+            for (const [word, positions] of Object.entries(invertedIndex)) {
+                positions.forEach(pos => { words[pos] = word; });
+            }
+            return words.join(' ');
+        }
+
+        async function fetchFromOpenAlex() {
             const query = document.getElementById('searchInput').value.trim();
             if (!query) return;
 
             const btn = document.getElementById('searchBtn');
             const loader = document.getElementById('searchLoader');
             const btnText = document.getElementById('searchBtnText');
-            const emptyText = document.getElementById('emptyStateText');
+            const emptyState = document.getElementById('emptyState');
 
-            btn.disabled = true;
-            loader.classList.remove('hidden');
-            btnText.textContent = "";
-            emptyText.textContent = "Loading live data from Semantic Scholar...";
+            btn.disabled = true; loader.classList.remove('hidden'); btnText.textContent = "";
+            emptyState.textContent = "Querying OpenAlex Global Graph...";
 
-            const url = `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=15&fields=title,authors,year,citationCount,abstract,venue`;
+            // OpenAlex Works Endpoint
+            const url = `https://api.openalex.org/works?search=${encodeURIComponent(query)}&limit=20&select=id,display_name,publication_year,cited_by_count,abstract_inverted_index,authorships,primary_location`;
 
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                if (data.data && data.data.length > 0) {
-                    activeResults = data.data.map(p => ({
-                        id: p.paperId,
-                        title: p.title,
-                        authors: (p.authors && p.authors.length) ? p.authors.map(a => a.name).join(', ') : 'Unknown Authors',
-                        year: p.year || 'N/A',
-                        cites: p.citationCount || 0,
-                        venue: p.venue || 'General Publication',
-                        abstract: p.abstract || "Abstract is currently unavailable for this record."
-                    }));
+                if (data.results && data.results.length > 0) {
+                    paperResults = data.results.map(p => {
+                        // Extract first author's country code
+                        let country = "Unknown";
+                        if (p.authorships?.[0]?.institutions?.[0]?.country_code) {
+                            country = p.authorships[0].institutions[0].country_code;
+                        }
+
+                        return {
+                            id: p.id,
+                            title: p.display_name,
+                            year: p.publication_year || "N/A",
+                            cites: p.cited_by_count || 0,
+                            country: country,
+                            authors: p.authorships.slice(0, 3).map(a => a.author.display_name).join(', ') + (p.authorships.length > 3 ? ' et al.' : ''),
+                            abstract: reconstructAbstract(p.abstract_inverted_index)
+                        };
+                    });
+                    
                     document.getElementById('statScope').textContent = query;
-                    updateUI(activeResults);
+                    updateUI(paperResults);
                 } else {
-                    activeResults = [];
-                    emptyText.textContent = "No real-world results found for that specific term.";
+                    paperResults = [];
+                    emptyState.textContent = "Zero results found in OpenAlex for that specific keyword.";
                     updateUI([]);
                 }
             } catch (err) {
                 console.error(err);
-                emptyText.textContent = "Connection failed. Please check your internet and try again.";
+                emptyState.textContent = "API Connection Error. Please verify your internet connection.";
                 updateUI([]);
             } finally {
-                btn.disabled = false;
-                loader.classList.add('hidden');
-                btnText.textContent = "Find";
+                btn.disabled = false; loader.classList.add('hidden'); btnText.textContent = "Find";
             }
         }
 
-        async function analyzeResearchGaps() {
-            if (activeResults.length === 0) return;
+        async function analyzeGaps() {
+            if (paperResults.length === 0) return;
             const btn = document.getElementById('aiBtn');
             const loader = document.getElementById('aiLoader');
             const output = document.getElementById('aiOutput');
             const btnText = document.getElementById('aiBtnText');
 
             btn.disabled = true; loader.classList.remove('hidden');
-            btnText.textContent = "Reading Data...";
+            btnText.textContent = "Processing...";
             output.classList.remove('hidden');
-            output.textContent = "GapFinder Pro is synthesizing live abstracts to find research voids...";
+            output.textContent = "GapFinder Pro is reading OpenAlex metadata to pinpoint research voids...";
 
-            const context = activeResults.filter(p => p.abstract.length > 30).slice(0, 5).map(p => p.abstract).join("\n\n");
-            const prompt = `Review these academic abstracts:\n${context}\n\nTasks:\n1. Identify 2 specific "Research Gaps".\n2. Suggest 2 potential PhD Experiment Titles.\n3. How can ML be used here?`;
+            const abstracts = paperResults.filter(p => p.abstract.length > 50).slice(0, 5).map(p => p.abstract).join("\n\n");
+            const prompt = `Act as a senior PhD Research Architect. Review these real academic abstracts fetched from OpenAlex:\n\n${abstracts}\n\nTasks:\n1. Identify 2 specific "Research Gaps".\n2. Suggest 2 potential PhD Thesis titles.\n3. How can Machine Learning be used to solve these gaps?`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
@@ -240,10 +257,9 @@
                 const data = await res.json();
                 output.textContent = data.candidates[0].content.parts[0].text;
             } catch (err) {
-                output.textContent = "AI Analysis Error: Synthesis timed out. Try a more specific search term.";
+                output.textContent = "AI Synthesis currently unavailable in this session. Ensure an API key is configured.";
             } finally {
-                btn.disabled = false; loader.classList.add('hidden');
-                btnText.textContent = "Analyze Gaps";
+                btn.disabled = false; loader.classList.add('hidden'); btnText.textContent = "Analyze Topic Gaps";
             }
         }
 
@@ -255,9 +271,9 @@
             if (data.length === 0) {
                 noRes.classList.remove('hidden');
                 document.getElementById('statCount').textContent = "0";
-                document.getElementById('statVenues').textContent = "0";
+                document.getElementById('statRegions').textContent = "0";
                 document.getElementById('statImpact').textContent = "0";
-                if(venueChart) venueChart.destroy();
+                if(countryChart) countryChart.destroy();
                 if(trendChart) trendChart.destroy();
                 return;
             }
@@ -265,18 +281,18 @@
             noRes.classList.add('hidden');
             data.forEach(p => {
                 const div = document.createElement('div');
-                div.className = 'glass-card p-6 rounded-2xl paper-card flex flex-col md:flex-row justify-between items-start gap-6';
+                div.className = 'glass-card p-6 rounded-2xl paper-card flex flex-col md:flex-row justify-between items-start gap-6 border border-stone-100';
                 div.innerHTML = `
                     <div class="flex-grow">
                         <div class="flex items-center gap-2 mb-2">
-                            <span class="tag bg-teal-50 text-teal-700 border border-teal-100">${p.venue}</span>
+                            <span class="tag bg-stone-100 text-stone-600 border border-stone-200">${p.country}</span>
                             <span class="text-stone-400 text-xs font-bold">${p.year}</span>
                         </div>
                         <h4 class="text-lg font-bold text-stone-800 leading-tight">${p.title}</h4>
                         <p class="text-[11px] text-stone-500 mt-1">${p.authors}</p>
                         <p class="text-stone-600 text-sm mt-4 italic line-clamp-3 leading-relaxed">"${p.abstract}"</p>
                     </div>
-                    <div class="shrink-0 text-center bg-stone-50 p-4 rounded-xl min-w-[90px] border border-stone-100">
+                    <div class="shrink-0 text-center bg-stone-50 p-4 rounded-xl min-w-[90px]">
                         <span class="text-3xl font-black text-stone-800">${p.cites}</span>
                         <p class="text-[9px] text-stone-400 uppercase font-bold tracking-widest mt-1">Citations</p>
                     </div>
@@ -284,27 +300,28 @@
                 list.appendChild(div);
             });
 
+            // Update Metrics based on ACTUAL data returned
             document.getElementById('statCount').textContent = data.length;
-            document.getElementById('statVenues').textContent = [...new Set(data.map(p => p.venue))].length;
-            document.getElementById('statImpact').textContent = data.length > 0 ? Math.max(...data.map(p => p.cites)) : 0;
+            document.getElementById('statRegions').textContent = [...new Set(data.map(p => p.country))].length;
+            document.getElementById('statImpact').textContent = Math.max(...data.map(p => p.cites));
             
             renderCharts(data);
         }
 
         function renderCharts(data) {
-            // Venue Chart
-            const venueCtx = document.getElementById('venueChart').getContext('2d');
-            const venueCounts = {}; data.forEach(p => venueCounts[p.venue] = (venueCounts[p.venue] || 0) + 1);
-            const sortedVenues = Object.entries(venueCounts).sort((a,b) => b[1] - a[1]).slice(0, 6);
+            // Geographic Distribution Chart
+            const countryCtx = document.getElementById('countryChart').getContext('2d');
+            const countries = {}; data.forEach(p => countries[p.country] = (countries[p.country] || 0) + 1);
+            const sortedCountries = Object.entries(countries).sort((a,b) => b[1] - a[1]).slice(0, 8);
 
-            if (venueChart) venueChart.destroy();
-            venueChart = new Chart(venueCtx, {
+            if (countryChart) countryChart.destroy();
+            countryChart = new Chart(countryCtx, {
                 type: 'bar',
                 data: {
-                    labels: sortedVenues.map(v => v[0].length > 15 ? v[0].substring(0, 15) + '...' : v[0]),
+                    labels: sortedCountries.map(e => e[0]),
                     datasets: [{
-                        label: '% Share',
-                        data: sortedVenues.map(v => (v[1]/data.length*100).toFixed(1)),
+                        label: 'Paper Volume (%)',
+                        data: sortedCountries.map(e => (e[1]/data.length*100).toFixed(1)),
                         backgroundColor: '#0d9488',
                         borderRadius: 8
                     }]
@@ -318,7 +335,7 @@
                 }
             });
 
-            // Trend Chart
+            // Publication Momentum Chart
             const trendCtx = document.getElementById('trendChart').getContext('2d');
             const years = Array.from(new Set(data.map(p => p.year))).filter(y => !isNaN(y)).sort();
             const counts = years.map(y => data.filter(p => p.year === y).length);
@@ -346,9 +363,9 @@
             });
         }
 
-        document.getElementById('searchBtn').addEventListener('click', fetchRealPapers);
-        document.getElementById('searchInput').addEventListener('keypress', (e) => e.key === 'Enter' && fetchRealPapers());
-        document.getElementById('aiBtn').addEventListener('click', analyzeResearchGaps);
+        document.getElementById('searchBtn').addEventListener('click', fetchFromOpenAlex);
+        document.getElementById('searchInput').addEventListener('keypress', (e) => e.key === 'Enter' && fetchFromOpenAlex());
+        document.getElementById('aiBtn').addEventListener('click', analyzeGaps);
     </script>
 </body>
 </html>
